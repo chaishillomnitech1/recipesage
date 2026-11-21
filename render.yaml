@@ -1,0 +1,30 @@
+# Render free-tier deployment — RecipeSage (ScrollVerse Command Hub)
+# ⚠ BLOCKED — DO NOT DEPLOY AS-IS. See deployment-2026-11-20.md.
+# This file is prepared for the moment the auth decision lands; the service will
+# NOT boot on Render today because server/replitAuth.ts requires Replit-only
+# variables (REPLIT_DOMAINS, REPL_ID) and Replit's OIDC issuer, which only works
+# when the app runs on Replit infrastructure. The admin dashboard is gated by it.
+services:
+  - type: web
+    name: recipesage
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # DATABASE_URL: free Neon Postgres (neon.tech free tier) — server/db.ts
+      # throws at boot without it, and the session store needs it too.
+      - key: DATABASE_URL
+        sync: false
+      # SESSION_SECRET: set in the Render dashboard to any long random string.
+      - key: SESSION_SECRET
+        sync: false
+      # REPLIT_DOMAINS / REPL_ID: Replit Auth requirements — NOT settable to a
+      # working value on Render. This is the blocker. See the deployment record
+      # for the two options (replace Replit Auth with a simple login, or keep
+      # RecipeSage on Replit / serve the static client only with admin disabled).
+    # No Stripe anywhere in this app.
+    # NOTE: Render free services spin down after ~15 min idle; first load after
+    # idle can take ~30-60s to wake. 750 free instance-hours/month covers one service.
